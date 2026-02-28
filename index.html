@@ -1,49 +1,220 @@
- <!DOCTYPE html>                                                                                                                                                                                                                                                                                                   
-     <html lang="zh-CN">                                                                                                                                                                                                                                                                                               
-     <head>                                                                                                                                                                                                                                                                                                            
-       <meta charset="UTF-8" />                                                                                                                                                                                                                                                                                        
-       <meta name="viewport" content="width=device-width, initial-scale=1.0"/>                                                                                                                                                                                                                                         
-       <title>🔥 近期热门新闻</title>                                                                                                                                                                                                                                                                                  
-       <style>                                                                                                                                                                                                                                                                                                         
-         body { font-family: -apple-system, BlinkMacSystemFont, sans-serif; margin: 0; padding: 20px; background: #f4f4f4; }                                                                                                                                                                                           
-         h1 { text-align: center; color: #333; }                                                                                                                                                                                                                                                                       
-         .news-item { background: white; margin: 10px 0; padding: 15px; border-radius: 8px; box-shadow: 0 2px 4px rgba(0,0,0,0.1); }                                                                                                                                                                                   
-         .news-title { font-size: 18px; color: #1a1a1a; margin-bottom: 5px; }                                                                                                                                                                                                                                          
-         .news-url { color: #0066cc; font-size: 14px; }                                                                                                                                                                                                                                                                
-       </style>                                                                                                                                                                                                                                                                                                        
-     </head>                                                                                                                                                                                                                                                                                                           
-     <body>                                                                                                                                                                                                                                                                                                            
-       <h1>🔥 近期热门新闻榜单</h1>                                                                                                                                                                                                                                                                                    
-       <div id="news-container">                                                                                                                                                                                                                                                                                       
-         <!-- 新闻内容将通过 JS 加载 -->                                                                                                                                                                                                                                                                               
-       </div>                                                                                                                                                                                                                                                                                                          
-                                                                                                                                                                                                                                                                                                                       
-       <script>                                                                                                                                                                                                                                                                                                        
-         async function fetchHotNews() {                                                                                                                                                                                                                                                                               
-           try {                                                                                                                                                                                                                                                                                                       
-             // 模拟数据，实际可替换为真实 API                                                                                                                                                                                                                                                                         
-             const mockNews = [                                                                                                                                                                                                                                                                                        
-               { title: "🚀 中国成功发射新型火箭，开启太空探索新阶段", url: "https://example.com/news1" },                                                                                                                                                                                                             
-               { title: "💻 AI大模型技术突破，国产模型性能媲美国际领先水平", url: "https://example.com/news2" },                                                                                                                                                                                                       
-               { title: "🌱 碳中和目标加速推进，绿色能源投资创新高", url: "https://example.com/news3" },                                                                                                                                                                                                               
-               { title: "🎮 某热门游戏全球在线破纪录，玩家热情高涨", url: "https://example.com/news4" },                                                                                                                                                                                                               
-               { title: "📈 中国经济回暖信号明显，多领域数据超预期", url: "https://example.com/news5" }                                                                                                                                                                                                                
-             ];                                                                                                                                                                                                                                                                                                        
-                                                                                                                                                                                                                                                                                                                       
-             const newsContainer = document.getElementById('news-co ntainer');                                                                                                                                                                                                                                         
-             mockNews.forEach(item => {                                                                                                                                                                                                                                                                                
-               const div = document.createElement('div');                                                                                                                                                                                                                                                              
-               div.className = 'news-item';                                                                                                                                                                                                                                                                            
-               div.innerHTML = `<div class="news-title">${item.title}</div><div class="news-url">来源链接: <a href="${item.url}" target="_blank">${item.url}</a></div>`;                                                                                                                                               
-               newsContainer.appendChild(div);                                                                                                                                                                                                                                                                         
-             });                                                                                                                                                                                                                                                                                                       
-           } catch (error) {                                                                                                                                                                                                                                                                                           
-             console.error('获取新闻失败:', error);                                                                                                                                                                                                                                                                    
-             document.getElementById('news-co ntainer').innerHTML = '<div class="news-item">暂时无法加载新闻，请稍后再试。</div>';                                                                                                                                                                                     
-           }                                                                                                                                                                                                                                                                                                           
-         }                                                                                                                                                                                                                                                                                                             
-                                                                                                                                                                                                                                                                                                                       
-         fetchHotNews();                                                                                                                                                                                                                                                                                               
-       </script>                                                                                                                                                                                                                                                                                                       
-     </body>                                                                                                                                                                                                                                                                                                           
-     </html>
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>实时资讯看板</title>
+  <style>
+    :root {
+      --bg: #0b1220;
+      --card: #111a2c;
+      --text: #e6edf7;
+      --sub: #9fb0cc;
+      --accent: #50a2ff;
+      --ok: #4ad295;
+      --warn: #ffb74d;
+      --line: #1f2b44;
+    }
+
+    * { box-sizing: border-box; }
+
+    body {
+      margin: 0;
+      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "PingFang SC", "Hiragino Sans GB", "Microsoft YaHei", sans-serif;
+      background: radial-gradient(1200px 600px at 20% -10%, #1d2b4a 0%, var(--bg) 60%);
+      color: var(--text);
+      min-height: 100vh;
+      padding: 20px;
+    }
+
+    .app {
+      max-width: 900px;
+      margin: 0 auto;
+    }
+
+    .header {
+      display: flex;
+      flex-wrap: wrap;
+      justify-content: space-between;
+      align-items: center;
+      gap: 12px;
+      margin-bottom: 16px;
+    }
+
+    h1 {
+      margin: 0;
+      font-size: 28px;
+    }
+
+    .muted {
+      color: var(--sub);
+      font-size: 14px;
+    }
+
+    .toolbar {
+      display: flex;
+      gap: 8px;
+      align-items: center;
+      flex-wrap: wrap;
+    }
+
+    button {
+      border: 1px solid var(--line);
+      background: #14213a;
+      color: var(--text);
+      border-radius: 10px;
+      padding: 8px 12px;
+      cursor: pointer;
+      font-size: 14px;
+    }
+
+    button:hover { border-color: var(--accent); }
+
+    select {
+      border: 1px solid var(--line);
+      background: #14213a;
+      color: var(--text);
+      border-radius: 10px;
+      padding: 8px 10px;
+      font-size: 14px;
+    }
+
+    .status {
+      margin: 8px 0 14px;
+      font-size: 14px;
+      color: var(--sub);
+    }
+
+    .status .ok { color: var(--ok); }
+    .status .warn { color: var(--warn); }
+
+    .news-list {
+      display: grid;
+      gap: 10px;
+    }
+
+    .news-item {
+      background: linear-gradient(180deg, #111a2c 0%, #0f1829 100%);
+      border: 1px solid var(--line);
+      border-radius: 14px;
+      padding: 14px;
+    }
+
+    .news-title {
+      margin: 0 0 10px;
+      font-weight: 600;
+      line-height: 1.5;
+    }
+
+    .news-title a {
+      color: var(--text);
+      text-decoration: none;
+    }
+
+    .news-title a:hover {
+      color: var(--accent);
+      text-decoration: underline;
+    }
+
+    .meta {
+      display: flex;
+      gap: 12px;
+      flex-wrap: wrap;
+      color: var(--sub);
+      font-size: 13px;
+    }
+  </style>
+</head>
+<body>
+  <div class="app">
+    <div class="header">
+      <div>
+        <h1>📰 实时资讯看板</h1>
+        <div class="muted">自动刷新，适配 Vercel 部署</div>
+      </div>
+      <div class="toolbar">
+        <label class="muted" for="refresh-interval">刷新频率</label>
+        <select id="refresh-interval">
+          <option value="15000">15秒</option>
+          <option value="30000" selected>30秒</option>
+          <option value="60000">60秒</option>
+        </select>
+        <button id="refresh-btn">立即刷新</button>
+      </div>
+    </div>
+
+    <div id="status" class="status">正在加载最新资讯...</div>
+    <div id="news-container" class="news-list"></div>
+  </div>
+
+  <script>
+    const statusEl = document.getElementById('status');
+    const newsContainer = document.getElementById('news-container');
+    const refreshBtn = document.getElementById('refresh-btn');
+    const intervalSelect = document.getElementById('refresh-interval');
+
+    let timer = null;
+
+    function formatTime(iso) {
+      if (!iso) return '未知时间';
+      const dt = new Date(iso);
+      if (Number.isNaN(dt.getTime())) return '未知时间';
+      return dt.toLocaleString('zh-CN', { hour12: false });
+    }
+
+    function setStatus(text, type = 'normal') {
+      statusEl.className = `status ${type === 'ok' ? 'ok' : type === 'warn' ? 'warn' : ''}`;
+      statusEl.textContent = text;
+    }
+
+    function renderNews(items) {
+      if (!items || items.length === 0) {
+        newsContainer.innerHTML = '<div class="news-item">暂无可展示的资讯。</div>';
+        return;
+      }
+
+      newsContainer.innerHTML = items.map(item => `
+        <article class="news-item">
+          <h3 class="news-title"><a href="${item.url}" target="_blank" rel="noopener noreferrer">${item.title}</a></h3>
+          <div class="meta">
+            <span>来源：${item.source || '未知来源'}</span>
+            <span>发布时间：${formatTime(item.publishedAt)}</span>
+          </div>
+        </article>
+      `).join('');
+    }
+
+    async function fetchNews() {
+      try {
+        setStatus('正在同步最新资讯...');
+        const response = await fetch('/api/news', { cache: 'no-store' });
+        if (!response.ok) {
+          throw new Error(`请求失败：${response.status}`);
+        }
+
+        const data = await response.json();
+        renderNews(data.items || []);
+
+        const updatedText = data.updatedAt
+          ? `已更新（${formatTime(data.updatedAt)}），共 ${data.items?.length || 0} 条`
+          : `已更新，共 ${data.items?.length || 0} 条`;
+        setStatus(updatedText, 'ok');
+      } catch (error) {
+        console.error('获取资讯失败：', error);
+        setStatus('刷新失败，稍后自动重试。', 'warn');
+      }
+    }
+
+    function startAutoRefresh() {
+      if (timer) clearInterval(timer);
+      timer = setInterval(fetchNews, Number(intervalSelect.value));
+    }
+
+    refreshBtn.addEventListener('click', fetchNews);
+    intervalSelect.addEventListener('change', startAutoRefresh);
+
+    fetchNews();
+    startAutoRefresh();
+  </script>
+</body>
+</html>
