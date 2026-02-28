@@ -1,0 +1,24 @@
+{
+  "name": "my-new-project",
+  "version": "1.0.0",
+  "description": "",
+  "main": "index.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/Jacky1288/my-new-project.git"
+  },
+  "keywords": [],
+  "author": "",
+  "license": "ISC",
+  "type": "commonjs",
+  "bugs": {
+    "url": "https://github.com/Jacky1288/my-new-project/issues"
+  },
+  "homepage": "https://github.com/Jacky1288/my-new-project#readme",
+  "dependencies": {
+    "rss-parser": "^3.13.0"
+  }
+}

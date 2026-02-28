@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>实时资讯看板</title>
+  <title>X 热门资讯 · 中英双语</title>
   <style>
     :root {
       --bg: #0b1220;
@@ -14,6 +14,7 @@
       --ok: #4ad295;
       --warn: #ffb74d;
       --line: #1f2b44;
+      --tag-bg: #1a2c4a;
     }
 
     * { box-sizing: border-box; }
@@ -63,12 +64,14 @@
       background: #14213a;
       color: var(--text);
       border-radius: 10px;
-      padding: 8px 12px;
+      padding: 8px 14px;
       cursor: pointer;
       font-size: 14px;
+      transition: border-color .2s;
     }
 
     button:hover { border-color: var(--accent); }
+    button:disabled { opacity: .45; cursor: default; }
 
     select {
       border: 1px solid var(--line);
@@ -79,14 +82,29 @@
       font-size: 14px;
     }
 
-    .status {
+    .status-bar {
       margin: 8px 0 14px;
       font-size: 14px;
       color: var(--sub);
+      display: flex;
+      align-items: center;
+      gap: 8px;
     }
 
-    .status .ok { color: var(--ok); }
-    .status .warn { color: var(--warn); }
+    .dot {
+      width: 8px; height: 8px;
+      border-radius: 50%;
+      background: var(--sub);
+      flex-shrink: 0;
+    }
+    .dot.ok   { background: var(--ok);   box-shadow: 0 0 6px var(--ok); }
+    .dot.warn { background: var(--warn); box-shadow: 0 0 6px var(--warn); }
+    .dot.loading {
+      background: var(--accent);
+      animation: pulse 1.2s ease-in-out infinite;
+    }
+
+    @keyframes pulse { 0%,100%{opacity:1} 50%{opacity:.3} }
 
     .news-list {
       display: grid;
@@ -94,120 +112,201 @@
     }
 
     .news-item {
-      background: linear-gradient(180deg, #111a2c 0%, #0f1829 100%);
+      background: linear-gradient(160deg, #131e34 0%, #0f1829 100%);
       border: 1px solid var(--line);
       border-radius: 14px;
-      padding: 14px;
+      padding: 16px;
+      transition: border-color .2s;
     }
 
-    .news-title {
-      margin: 0 0 10px;
-      font-weight: 600;
-      line-height: 1.5;
+    .news-item:hover { border-color: #2a4070; }
+
+    /* 中文标题 */
+    .title-zh {
+      margin: 0 0 6px;
+      font-size: 17px;
+      font-weight: 700;
+      line-height: 1.55;
     }
 
-    .news-title a {
+    .title-zh a {
       color: var(--text);
       text-decoration: none;
     }
 
-    .news-title a:hover {
-      color: var(--accent);
-      text-decoration: underline;
+    .title-zh a:hover { color: var(--accent); text-decoration: underline; }
+
+    /* 英文原文 */
+    .title-en {
+      margin: 0 0 10px;
+      font-size: 13px;
+      color: var(--sub);
+      line-height: 1.4;
     }
+
+    .title-en a {
+      color: var(--sub);
+      text-decoration: none;
+    }
+
+    .title-en a:hover { color: var(--accent); }
 
     .meta {
       display: flex;
-      gap: 12px;
+      gap: 8px;
       flex-wrap: wrap;
-      color: var(--sub);
-      font-size: 13px;
+      align-items: center;
+      font-size: 12px;
     }
+
+    .tag {
+      background: var(--tag-bg);
+      border: 1px solid var(--line);
+      border-radius: 20px;
+      padding: 2px 9px;
+      color: var(--sub);
+    }
+
+    .skeleton {
+      background: linear-gradient(90deg, var(--line) 25%, #1c2e4a 50%, var(--line) 75%);
+      background-size: 200% 100%;
+      animation: shimmer 1.4s infinite;
+      border-radius: 8px;
+      height: 16px;
+      margin-bottom: 8px;
+    }
+
+    @keyframes shimmer { 0%{background-position:200% 0} 100%{background-position:-200% 0} }
+
+    .skeleton-title { height: 20px; width: 90%; }
+    .skeleton-sub   { height: 14px; width: 65%; }
+    .skeleton-meta  { height: 14px; width: 40%; }
   </style>
 </head>
 <body>
   <div class="app">
     <div class="header">
       <div>
-        <h1>📰 实时资讯看板</h1>
-        <div class="muted">自动刷新，适配 Vercel 部署</div>
+        <h1>𝕏 热门资讯 · 中英双语</h1>
+        <div class="muted">聚合 X / Google 热搜 / 全球新闻，自动翻译为中文</div>
       </div>
       <div class="toolbar">
-        <label class="muted" for="refresh-interval">刷新频率</label>
+        <label class="muted" for="refresh-interval">自动刷新</label>
         <select id="refresh-interval">
-          <option value="15000">15秒</option>
-          <option value="30000" selected>30秒</option>
-          <option value="60000">60秒</option>
+          <option value="30000" selected>30 秒</option>
+          <option value="60000">1 分钟</option>
+          <option value="120000">2 分钟</option>
+          <option value="0">关闭</option>
         </select>
-        <button id="refresh-btn">立即刷新</button>
+        <button id="refresh-btn">⟳ 立即刷新</button>
       </div>
     </div>
 
-    <div id="status" class="status">正在加载最新资讯...</div>
+    <div id="status-bar" class="status-bar">
+      <span class="dot loading" id="status-dot"></span>
+      <span id="status-text">正在加载最新资讯...</span>
+    </div>
     <div id="news-container" class="news-list"></div>
   </div>
 
   <script>
-    const statusEl = document.getElementById('status');
+    const statusDot  = document.getElementById('status-dot');
+    const statusText = document.getElementById('status-text');
     const newsContainer = document.getElementById('news-container');
     const refreshBtn = document.getElementById('refresh-btn');
     const intervalSelect = document.getElementById('refresh-interval');
 
     let timer = null;
+    let loading = false;
 
     function formatTime(iso) {
-      if (!iso) return '未知时间';
+      if (!iso) return '';
       const dt = new Date(iso);
-      if (Number.isNaN(dt.getTime())) return '未知时间';
+      if (Number.isNaN(dt.getTime())) return '';
       return dt.toLocaleString('zh-CN', { hour12: false });
     }
 
-    function setStatus(text, type = 'normal') {
-      statusEl.className = `status ${type === 'ok' ? 'ok' : type === 'warn' ? 'warn' : ''}`;
-      statusEl.textContent = text;
+    function setStatus(text, type = 'loading') {
+      statusDot.className = `dot ${type}`;
+      statusText.textContent = text;
+    }
+
+    function showSkeletons(n = 5) {
+      newsContainer.innerHTML = Array.from({ length: n }).map(() => `
+        <div class="news-item">
+          <div class="skeleton skeleton-title"></div>
+          <div class="skeleton skeleton-sub"></div>
+          <div class="skeleton skeleton-meta"></div>
+        </div>
+      `).join('');
+    }
+
+    function escapeHtml(str) {
+      return String(str)
+        .replace(/&/g, '&amp;')
+        .replace(/</g, '&lt;')
+        .replace(/>/g, '&gt;')
+        .replace(/"/g, '&quot;');
     }
 
     function renderNews(items) {
       if (!items || items.length === 0) {
-        newsContainer.innerHTML = '<div class="news-item">暂无可展示的资讯。</div>';
+        newsContainer.innerHTML = '<div class="news-item" style="color:var(--sub)">暂无可展示的资讯，请稍后重试。</div>';
         return;
       }
 
-      newsContainer.innerHTML = items.map(item => `
-        <article class="news-item">
-          <h3 class="news-title"><a href="${item.url}" target="_blank" rel="noopener noreferrer">${item.title}</a></h3>
-          <div class="meta">
-            <span>来源：${item.source || '未知来源'}</span>
-            <span>发布时间：${formatTime(item.publishedAt)}</span>
-          </div>
-        </article>
-      `).join('');
+      newsContainer.innerHTML = items.map((item, i) => {
+        const zhTitle   = escapeHtml(item.title_zh || item.title || '（无标题）');
+        const enTitle   = escapeHtml(item.title || '');
+        const url       = escapeHtml(item.url || '#');
+        const source    = escapeHtml(item.icon ? `${item.icon} ${item.source}` : (item.source || '未知来源'));
+        const timeStr   = formatTime(item.publishedAt);
+
+        return `
+          <article class="news-item">
+            <p class="title-zh">
+              <a href="${url}" target="_blank" rel="noopener noreferrer">${zhTitle}</a>
+            </p>
+            ${enTitle !== zhTitle ? `<p class="title-en"><a href="${url}" target="_blank" rel="noopener noreferrer">${enTitle}</a></p>` : ''}
+            <div class="meta">
+              <span class="tag">${source}</span>
+              ${timeStr ? `<span class="muted">${timeStr}</span>` : ''}
+            </div>
+          </article>
+        `;
+      }).join('');
     }
 
     async function fetchNews() {
-      try {
-        setStatus('正在同步最新资讯...');
-        const response = await fetch('/api/news', { cache: 'no-store' });
-        if (!response.ok) {
-          throw new Error(`请求失败：${response.status}`);
-        }
+      if (loading) return;
+      loading = true;
+      refreshBtn.disabled = true;
+      setStatus('正在同步最新资讯...', 'loading');
+      showSkeletons();
 
-        const data = await response.json();
+      try {
+        const res = await fetch('/api/x-trends', { cache: 'no-store' });
+        if (!res.ok) throw new Error(`HTTP ${res.status}`);
+        const data = await res.json();
         renderNews(data.items || []);
 
-        const updatedText = data.updatedAt
-          ? `已更新（${formatTime(data.updatedAt)}），共 ${data.items?.length || 0} 条`
-          : `已更新，共 ${data.items?.length || 0} 条`;
-        setStatus(updatedText, 'ok');
-      } catch (error) {
-        console.error('获取资讯失败：', error);
+        const count = data.items?.length || 0;
+        const updated = data.updatedAt ? formatTime(data.updatedAt) : '';
+        setStatus(`已更新${updated ? '（' + updated + '）' : ''}，共 ${count} 条`, 'ok');
+      } catch (err) {
+        console.error('获取资讯失败：', err);
         setStatus('刷新失败，稍后自动重试。', 'warn');
+        newsContainer.innerHTML = '<div class="news-item" style="color:var(--warn)">⚠️ 暂时无法加载资讯，请稍后再试。</div>';
+      } finally {
+        loading = false;
+        refreshBtn.disabled = false;
       }
     }
 
     function startAutoRefresh() {
       if (timer) clearInterval(timer);
-      timer = setInterval(fetchNews, Number(intervalSelect.value));
+      const ms = Number(intervalSelect.value);
+      if (ms > 0) timer = setInterval(fetchNews, ms);
     }
 
     refreshBtn.addEventListener('click', fetchNews);
